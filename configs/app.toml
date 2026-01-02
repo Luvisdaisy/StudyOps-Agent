@@ -5,3 +5,11 @@ url = "redis://localhost:6379/0"
 uri = "bolt://localhost:7687"
 user = "neo4j"
 password = "password123"
+
+[chroma]
+persist_dir = "data/chroma"
+collection = "studyops"
+
+[chunk]
+max_chars = 1200
+overlap = 150

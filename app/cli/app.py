@@ -39,11 +39,38 @@ def health(config: str = typer.Option("configs/app.toml", help="Path to config f
 
 
 @app.command()
-def ingest(path: str) -> None:
+def ingest(
+    path: str,
+    config: str = typer.Option("configs/app.toml", help="Path to config file"),
+) -> None:
     """
-    Placeholder for ingestion pipeline.
+    Ingest documents from a directory (md/txt/pdf), chunk them, and store in Chroma.
     """
-    typer.echo(f"[TODO] ingest from: {path}")
+    from app.utils.config import load_config
+    from app.ingest.pipeline import ingest_path
+    from app.storage.chroma_store import ChromaConfig as StoreChromaConfig
+    from app.ingest.chunker import ChunkConfig as IngestChunkConfig
+
+    cfg = load_config(config)
+
+    result = ingest_path(
+        path=path,
+        chroma_cfg=StoreChromaConfig(
+            persist_dir=cfg.chroma.persist_dir,
+            collection=cfg.chroma.collection,
+        ),
+        chunk_cfg=IngestChunkConfig(
+            max_chars=cfg.chunk.max_chars,
+            overlap=cfg.chunk.overlap,
+        ),
+    )
+
+    typer.echo("Ingest done.")
+    typer.echo(f"- Files found:    {result.files_total}")
+    typer.echo(f"- Docs ingested:  {result.docs_ok}")
+    typer.echo(f"- Docs skipped:   {result.docs_skipped}")
+    typer.echo(f"- Chunks written: {result.chunks_written}")
+
 
 
 @app.command()
